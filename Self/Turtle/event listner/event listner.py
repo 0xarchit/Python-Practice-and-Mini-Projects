@@ -1,5 +1,4 @@
 import turtle as t
-import random
 
 turt = t.Turtle()
 turt.shape('turtle')
