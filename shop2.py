@@ -83,10 +83,7 @@ class Cart:
         print(f"{product.get_name()} not found in cart.")
 
     def calculate_total(self):
-        total = 0
-        for product, quantity in self.__items:
-            total += product.get_price() * quantity
-        return total
+        return sum(product.get_price() * quantity for product, quantity in self.__items)
 
     def view_cart(self):
         if not self.__items:
@@ -97,6 +94,13 @@ class Cart:
                 print(f"{index}. {product.get_name()} x{quantity} (₹{product.get_price():.2f} each)")
 
     def clear_cart(self):
+        if not self.__items:
+            print("Cart is already empty.")
+            return
+
+        for product, quantity in self.__items:
+            product.update_stock(-quantity)
+        
         self.__items.clear()
         print("Cart has been cleared.")
 
@@ -110,6 +114,10 @@ class Order:
         self.__payment_method = payment_method
 
     def checkout(self):
+        if not self.__cart.get_items():
+            print("Cannot proceed to checkout. Your cart is empty.")
+            return False
+
         total = self.__cart.calculate_total()
 
         print("\nInvoice:")
@@ -118,8 +126,10 @@ class Order:
         if self.__payment_method.process_payment(total):
             print("Payment successful. Order placed!")
             self.__cart.clear_cart()
+            return True
         else:
             print("Payment failed.")
+            return False
 
 
 def display_products(products):
@@ -127,12 +137,13 @@ def display_products(products):
     for key, product in products.items():
         print(f"{key}. {product.get_name()} - ₹{product.get_price():.2f} (Stock: {product.get_stock()})")
 
+
 laptop = Electronics("Laptop", 100000, 10, "1 year")
-shirt = Clothing("Shirt", 500, 20, "M")
 phone = Electronics("Smartphone", 18000, 5, "6 months")
 headphones = Electronics("Headphones", 2500, 15, "2 years")
-jeans = Clothing("Jeans", 400, 25, "L")
 watch = Electronics("Smart Watch", 2300, 8, "1 year")
+shirt = Clothing("Shirt", 500, 20, "M")
+jeans = Clothing("Jeans", 400, 25, "L")
 jacket = Clothing("Jacket", 3200, 10, "XL")
 
 products = {
@@ -145,10 +156,8 @@ products = {
     7: jacket
 }
 
-# Initialize cart
 cart = Cart()
 
-# Shopping loop
 while True:
     print("\n--- Online Shopping Cart System ---")
     print("1. View Products")
@@ -222,4 +231,3 @@ while True:
 
     else:
         print("Invalid choice. Please try again.")
-
