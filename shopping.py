@@ -90,17 +90,32 @@ class Cart:
         total_discount = sum(product.calculate_discount() * quantity for product, quantity in self.__items)
         return total_discount
 
-    def view_cart(self):
+    def view_cart(self, products=None):
         if not self.__items:
             print("Your cart is empty.")
         else:
             print("Cart Contents:")
             for product, quantity in self.__items:
-                print(f"- {product.get_name()} x{quantity} (${product.get_price():.2f} each)")
+                if products:
+                    for pid, prod in products.items():
+                        if prod == product:
+                            print(f"{pid}. {product.get_name()} x{quantity} (${product.get_price():.2f} each)")
+                            break
+                else:
+                    print(f"- {product.get_name()} x{quantity} (${product.get_price():.2f} each)")
 
     def clear_cart(self):
-        self.__items.clear()
-        print("Cart has been cleared.")
+        if self.is_empty():
+            print("Your cart is empty.")
+        else:
+            self.__items.clear()
+            print("Cart has been cleared.")
+
+    def is_empty(self):
+        return len(self.__items) == 0
+    
+    def has_product(self, product):
+        return any(p == product for p, _ in self.__items)
 
 
 class Order:
@@ -172,23 +187,36 @@ def main():
                 print("Please enter valid numbers.")
 
         elif choice == "3":
-            cart.view_cart()
+            if cart.is_empty():
+                print("Your cart is empty.")
+                continue
+            cart.view_cart(products)
             try:
                 product_id = int(input("Enter the product ID to remove: "))
                 if product_id in products:
-                    cart.remove_product(products[product_id])
+                    prod = products[product_id]
+                    if cart.has_product(prod):
+                        cart.remove_product(prod)
+                    else:
+                        print("Product ID not in cart. Please enter correct ID.")
                 else:
                     print("Invalid product ID.")
             except ValueError:
                 print("Please enter a valid number.")
 
         elif choice == "4":
-            cart.view_cart()
+            cart.view_cart(products)
 
         elif choice == "5":
-            cart.clear_cart()
+            if cart.is_empty():
+                print("Your cart is empty.")
+            else:
+                cart.clear_cart()
 
         elif choice == "6":
+            if cart.is_empty():
+                print("Your cart is empty.")
+                continue
             print("\nSelect Payment Method:")
             print("1. Credit Card")
             print("2. PayPal")
